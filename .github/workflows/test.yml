@@ -1,0 +1,42 @@
+name: Python CI - Agenda CRUD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🧭 Checkout del código
+      uses: actions/checkout@v4
+
+    - name: 🐍 Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+
+    - name: 📦 Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: 🧪 Ejecutar pruebas con pytest
+      run: |
+        pytest --maxfail=1 --disable-warnings -q
+
+    - name: 📊 Generar reporte de cobertura
+      run: |
+        coverage run -m pytest
+        coverage report
+        coverage xml
+
+    - name: 💾 Publicar reporte de cobertura (Codecov)
+      if: success()
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.xml
+        fail_ci_if_error: false
